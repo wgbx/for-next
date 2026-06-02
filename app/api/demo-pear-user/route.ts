@@ -19,11 +19,8 @@ function incHits() {
 
 export async function GET() {
   const vanityUrl = "wgbx";
-  const baseUrl =
-    process.env.PEAR_API_BASE_URL ??
-    process.env.NEXT_PUBLIC_SERVER_HOST_ENV ??
-    PEAR_DEFAULT_BASE_URL;
-  const url = new URL(`/user/vanity-url/${encodeURIComponent(vanityUrl)}`, baseUrl);
+  const baseUrls = ["https://katana-api.1m.app", PEAR_DEFAULT_BASE_URL];
+  const path = `/user/vanity-url/${encodeURIComponent(vanityUrl)}`;
 
   // 关键：对“外部后端服务”的请求结果做 tag 缓存
   const MAX_RETRIES = 2;
@@ -31,35 +28,44 @@ export async function GET() {
 
   let lastErr: unknown;
   let res: Response | null = null;
+  let usedUrl: URL | null = null;
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
-    const controller = new AbortController();
-    const t = setTimeout(() => controller.abort(), TIMEOUT_MS);
-    try {
-      res = await fetch(url, {
-        next: { tags: [PEAR_DEMO_TAG], revalidate: 900 },
-        headers: {
-          accept: "application/json",
-          // 某些上游网关会根据 UA/Host 做限流或策略
-          "user-agent": "isr-next-demo/1.0",
-        },
-        signal: controller.signal,
-      });
+  for (const baseUrl of baseUrls) {
+    const url = new URL(path, baseUrl);
 
-      // 上游 502/503/504 很常见是临时网关抖动，做有限重试
-      if ([502, 503, 504].includes(res.status) && attempt < MAX_RETRIES) {
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), TIMEOUT_MS);
+      try {
+        res = await fetch(url, {
+          next: { tags: [PEAR_DEMO_TAG], revalidate: 900 },
+          headers: {
+            accept: "application/json",
+            "user-agent": "isr-next-demo/1.0",
+          },
+          signal: controller.signal,
+        });
+
+        usedUrl = url;
+
+        // 上游 502/503/504 很常见是临时网关抖动，做有限重试
+        if ([502, 503, 504].includes(res.status) && attempt < MAX_RETRIES) {
+          await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
+          continue;
+        }
+
+        break;
+      } catch (e) {
+        lastErr = e;
+        usedUrl = url;
+        if (attempt >= MAX_RETRIES) break;
         await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
-        continue;
+      } finally {
+        clearTimeout(t);
       }
-
-      break;
-    } catch (e) {
-      lastErr = e;
-      if (attempt >= MAX_RETRIES) break;
-      await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
-    } finally {
-      clearTimeout(t);
     }
+
+    if (res?.ok) break;
   }
 
   if (!res?.ok) {
@@ -69,9 +75,8 @@ export async function GET() {
         ok: false,
         status: res?.status ?? 0,
         body: text.slice(0, 300),
-        url: url.toString(),
-        hint:
-          "可在 Vercel 配置环境变量 PEAR_API_BASE_URL（例如 https://staging.katana-api.1m.app 或 prod host）",
+        url: usedUrl?.toString(),
+        hint: "已按顺序尝试：prod(https://katana-api.1m.app) → staging",
         error: lastErr instanceof Error ? lastErr.message : undefined,
       },
       { status: 502 }
@@ -82,7 +87,7 @@ export async function GET() {
 
   return NextResponse.json({
     ok: true,
-    baseUrl,
+    baseUrl: usedUrl ? `${usedUrl.protocol}//${usedUrl.host}` : baseUrls[0],
     vanityUrl,
     apiHits,
     fetchedAt: new Date().toISOString(),
