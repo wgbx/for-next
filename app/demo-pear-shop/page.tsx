@@ -1,9 +1,32 @@
 import { PublishControlsPear } from "./PublishControlsPear";
 import { fetchPearUserByVanityUrl } from "./data";
 
+type PearApiEnvelope = {
+  code?: number;
+  message?: string;
+  request_id?: string;
+  data?: {
+    storeName?: string;
+    vanityUrl?: string;
+    logo?: string;
+    description?: string;
+    subTitle?: string;
+    pearVerified?: boolean;
+    storeFront?: {
+      themeName?: string;
+      postThemeName?: string;
+      colors?: Record<string, string>;
+    };
+  };
+};
+
 export default async function DemoPearShopPage() {
   const vanityUrl = "wgbx";
   const result = await fetchPearUserByVanityUrl(vanityUrl);
+
+  const envelope = (result.ok ? (result.data as PearApiEnvelope) : null) ?? null;
+  const shop = envelope?.data;
+  const colors = shop?.storeFront?.colors ?? null;
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -31,9 +54,65 @@ export default async function DemoPearShopPage() {
           </div>
 
           {result.ok ? (
-            <pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-black/[.04] p-4 text-xs text-zinc-900 dark:bg-white/[.06] dark:text-zinc-50">
-              {JSON.stringify(result.data, null, 2).slice(0, 4000)}
-            </pre>
+            <>
+              <div className="mt-5 grid grid-cols-[72px_1fr] gap-4 rounded-xl border border-black/[.06] p-4 dark:border-white/[.10]">
+                <div className="h-[72px] w-[72px] overflow-hidden rounded-xl bg-black/[.04] dark:bg-white/[.06]">
+                  {shop?.logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      alt="logo"
+                      src={shop.logo}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <div className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+                    {shop?.storeName ?? "(missing storeName)"}
+                    {shop?.pearVerified ? (
+                      <span className="ml-2 rounded-full bg-black/[.06] px-2 py-1 text-xs font-medium dark:bg-white/[.10]">
+                        PEAR VERIFIED
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    vanityUrl={shop?.vanityUrl ?? "(missing vanityUrl)"} · theme=
+                    {shop?.storeFront?.themeName ?? "?"} / postTheme=
+                    {shop?.storeFront?.postThemeName ?? "?"}
+                  </div>
+                  {shop?.subTitle ? (
+                    <div className="text-sm text-zinc-700 dark:text-zinc-300">
+                      {shop.subTitle}
+                    </div>
+                  ) : null}
+                  {shop?.description ? (
+                    <div className="text-sm text-zinc-700 dark:text-zinc-300">
+                      {shop.description}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="mt-5 text-sm text-zinc-600 dark:text-zinc-400">
+                上游响应摘要：code={envelope?.code ?? "?"} · message=
+                {envelope?.message ?? "?"} · request_id={envelope?.request_id ?? "?"}
+              </div>
+
+              {colors ? (
+                <div className="mt-4">
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    storeFront.colors（截断展示）
+                  </div>
+                  <pre className="mt-2 max-h-80 overflow-auto rounded-xl bg-black/[.04] p-4 text-xs text-zinc-900 dark:bg-white/[.06] dark:text-zinc-50">
+                    {JSON.stringify(colors, null, 2).slice(0, 4000)}
+                  </pre>
+                </div>
+              ) : (
+                <div className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+                  storeFront.colors 缺失
+                </div>
+              )}
+            </>
           ) : (
             <pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-black/[.04] p-4 text-xs text-zinc-900 dark:bg-white/[.06] dark:text-zinc-50">
               {JSON.stringify(result, null, 2).slice(0, 4000)}
