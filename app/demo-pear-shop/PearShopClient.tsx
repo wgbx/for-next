@@ -15,6 +15,9 @@ type ApiPayload =
       ok: false;
       status: number;
       body: string;
+      url?: string;
+      hint?: string;
+      error?: string;
     };
 
 export function PearShopClient() {
@@ -64,7 +67,11 @@ export function PearShopClient() {
           </>
         ) : payload?.ok === false ? (
           <div>
-            upstream failed: HTTP {payload.status} {payload.body}
+            <div>upstream failed: HTTP {payload.status}</div>
+            {payload.url ? <div>url={payload.url}</div> : null}
+            {payload.error ? <div>error={payload.error}</div> : null}
+            {payload.hint ? <div>hint={payload.hint}</div> : null}
+            {payload.body ? <div>body={payload.body}</div> : null}
           </div>
         ) : null}
       </div>
