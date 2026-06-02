@@ -8,14 +8,14 @@ export function PublishControlsPear() {
   const [publishing, setPublishing] = useState(false);
   const [lastResult, setLastResult] = useState<string>("");
 
-  async function publish() {
+  async function clearPageCache() {
     setPublishing(true);
     setLastResult("");
     try {
-      const res = await fetch("/api/demo-pear-publish", { method: "POST" });
-      const json = (await res.json()) as { publishedAt?: string };
+      const res = await fetch("/api/demo-pear-page-clear", { method: "POST" });
+      const json = (await res.json()) as { clearedAt?: string };
       setLastResult(
-        res.ok ? `已触发 revalidateTag：${json.publishedAt ?? ""}` : `失败：HTTP ${res.status}`
+        res.ok ? `已清除页面缓存：${json.clearedAt ?? ""}` : `失败：HTTP ${res.status}`
       );
     } catch (e) {
       setLastResult(`失败：${e instanceof Error ? e.message : String(e)}`);
@@ -29,11 +29,11 @@ export function PublishControlsPear() {
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <button
         type="button"
-        onClick={publish}
+        onClick={clearPageCache}
         disabled={publishing}
         className="inline-flex h-11 items-center justify-center rounded-full bg-foreground px-5 text-background transition-colors disabled:opacity-60"
       >
-        {publishing ? "发布中…" : "模拟发布（revalidateTag）"}
+        {publishing ? "清除中…" : "清除页面缓存（下一位用户会重新请求上游）"}
       </button>
       <button
         type="button"
