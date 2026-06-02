@@ -1,9 +1,7 @@
 import { PublishControls } from "./PublishControls";
-import { getShopHomeData } from "./data";
+import { ShopHomeClient } from "./ShopHomeClient";
 
 export default async function DemoShopHomePage() {
-  const data = await getShopHomeData();
-
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex w-full max-w-3xl flex-col gap-6 px-6 py-16 sm:px-10">
@@ -11,21 +9,7 @@ export default async function DemoShopHomePage() {
           Demo：按需 ISR（revalidateTag）
         </h1>
 
-        <div className="rounded-2xl border border-black/[.08] bg-white p-6 shadow-sm dark:border-white/[.14] dark:bg-black">
-          <div className="text-sm text-zinc-600 dark:text-zinc-400">
-            页面渲染时间（renderedAt）
-          </div>
-          <div className="mt-1 font-mono text-sm text-zinc-900 dark:text-zinc-50">
-            {data.backendServedAt}
-          </div>
-
-          <div className="mt-5 text-sm text-zinc-600 dark:text-zinc-400">
-            伪后端命中次数（hits）与后端响应时间（backendServedAt）
-          </div>
-          <div className="mt-1 font-mono text-sm text-zinc-900 dark:text-zinc-50">
-            hits={data.hits} · backendServedAt={data.backendServedAt}
-          </div>
-        </div>
+        <ShopHomeClient />
 
         <PublishControls />
 
@@ -39,8 +23,9 @@ export default async function DemoShopHomePage() {
               再 <span className="font-mono">pnpm start</span>
             </li>
             <li>
-              打开此页面两次（不同浏览器/无痕也行）：只要没点“模拟发布”，{" "}
-              <span className="font-mono">hits</span> 应该保持不变（复用缓存）
+              不同用户/不同浏览器都会请求一次{" "}
+              <span className="font-mono">/api/demo-shop-home</span>，但只要没点“模拟发布”，{" "}
+              <span className="font-mono">hits</span> 应该保持不变（说明接口背后复用缓存）
             </li>
             <li>
               点击“模拟发布（revalidateTag）”后再刷新：{" "}
