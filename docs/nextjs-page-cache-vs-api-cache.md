@@ -1,6 +1,6 @@
 # Next.js 页面缓存 vs 接口缓存（技术方案）
 
-> 适用版本：本仓库使用 Next.js 16（App Router）  
+> 适用版本：本仓库使用 Next.js 16（App Router）
 > 目标：解决“用户 A 访问后，用户 B 再访问不应重复请求后端”的缓存复用问题，并支持“发布后按需失效/刷新”。
 
 ## 1. 目标 / 非目标
@@ -27,8 +27,8 @@
 
 ### 3.1 页面缓存（Page Cache / ISR）
 
-**缓存对象**：页面的渲染输出（HTML/RSC 结果）。  
-**理想现象**：用户 A 首次访问触发取数 + 渲染；用户 B 再访问直接命中缓存，后端不再被调用。  
+**缓存对象**：页面的渲染输出（HTML/RSC 结果）。
+**理想现象**：用户 A 首次访问触发取数 + 渲染；用户 B 再访问直接命中缓存，后端不再被调用。
 **典型适用**：
 
 - 店铺首页（公共内容：店铺信息、主题、商品/内容列表）
@@ -37,7 +37,7 @@
 
 ### 3.2 接口缓存（API Cache / Next Data Cache）
 
-**缓存对象**：Next 服务端对外部后端 API 的 `fetch` 响应结果（Data Cache）。  
+**缓存对象**：Next 服务端对外部后端 API 的 `fetch` 响应结果（Data Cache）。
 **现象**：
 
 - 页面本身可能仍需执行（动态路由/用户态），或浏览器仍会请求本项目的 API
@@ -142,8 +142,8 @@ export async function GET() {
 
 ## 9. 本仓库 demo 对应关系（便于代码对照）
 
-- **页面缓存 demo**：`/demo-pear-shop`  
-  - 取数：`app/demo-pear-shop/data.ts`（`fetch(..., next: { tags, revalidate })`）  
+- **页面缓存 demo**：`/demo-pear-shop`
+  - 取数：`app/demo-pear-shop/data.ts`（`fetch(..., next: { tags, revalidate })`）
   - 清缓存：`POST /api/demo-pear-page-clear`（`revalidateTag + revalidatePath`）
 - **接口缓存 demo**：`/demo-shop-api` / `GET /api/demo-shop-home`（用于对照“浏览器会请求，但后端复用缓存”）
 
