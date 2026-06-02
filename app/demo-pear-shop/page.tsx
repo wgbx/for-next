@@ -6,16 +6,23 @@ type PearApiEnvelope = {
   message?: string;
   request_id?: string;
   data?: {
+    id?: string;
+    email?: string;
     storeName?: string;
     vanityUrl?: string;
     logo?: string;
     description?: string;
     subTitle?: string;
     pearVerified?: boolean;
+    backgroundImage?: string;
+    supportEmail?: string;
+    socialMedias?: Array<{ type?: string; account?: string }>;
     storeFront?: {
       themeName?: string;
       postThemeName?: string;
+      fonts?: unknown;
       colors?: Record<string, string>;
+      storeTabs?: Array<{ name?: string; checked?: boolean }>;
     };
   };
 };
@@ -27,6 +34,9 @@ export default async function DemoPearShopPage() {
   const envelope = (result.ok ? (result.data as PearApiEnvelope) : null) ?? null;
   const shop = envelope?.data;
   const colors = shop?.storeFront?.colors ?? null;
+  const fonts = shop?.storeFront?.fonts ?? null;
+  const tabs = shop?.storeFront?.storeTabs ?? null;
+  const socials = shop?.socialMedias ?? null;
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -80,6 +90,9 @@ export default async function DemoPearShopPage() {
                     {shop?.storeFront?.themeName ?? "?"} / postTheme=
                     {shop?.storeFront?.postThemeName ?? "?"}
                   </div>
+                  <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                    id={shop?.id ?? "?"} · email={shop?.email ?? "?"}
+                  </div>
                   {shop?.subTitle ? (
                     <div className="text-sm text-zinc-700 dark:text-zinc-300">
                       {shop.subTitle}
@@ -90,6 +103,16 @@ export default async function DemoPearShopPage() {
                       {shop.description}
                     </div>
                   ) : null}
+                  {shop?.backgroundImage ? (
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400 break-all">
+                      backgroundImage={shop.backgroundImage}
+                    </div>
+                  ) : null}
+                  {shop?.supportEmail ? (
+                    <div className="text-sm text-zinc-600 dark:text-zinc-400">
+                      supportEmail={shop.supportEmail}
+                    </div>
+                  ) : null}
                 </div>
               </div>
 
@@ -98,13 +121,35 @@ export default async function DemoPearShopPage() {
                 {envelope?.message ?? "?"} · request_id={envelope?.request_id ?? "?"}
               </div>
 
+              {socials?.length ? (
+                <div className="mt-4">
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    socialMedias
+                  </div>
+                  <pre className="mt-2 max-h-56 overflow-auto rounded-xl bg-black/[.04] p-4 text-xs text-zinc-900 dark:bg-white/[.06] dark:text-zinc-50">
+                    {JSON.stringify(socials, null, 2).slice(0, 12000)}
+                  </pre>
+                </div>
+              ) : null}
+
+              {tabs?.length ? (
+                <div className="mt-4">
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    storeFront.storeTabs
+                  </div>
+                  <pre className="mt-2 max-h-56 overflow-auto rounded-xl bg-black/[.04] p-4 text-xs text-zinc-900 dark:bg-white/[.06] dark:text-zinc-50">
+                    {JSON.stringify(tabs, null, 2).slice(0, 12000)}
+                  </pre>
+                </div>
+              ) : null}
+
               {colors ? (
                 <div className="mt-4">
                   <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                    storeFront.colors（截断展示）
+                    storeFront.colors（更长截断）
                   </div>
                   <pre className="mt-2 max-h-80 overflow-auto rounded-xl bg-black/[.04] p-4 text-xs text-zinc-900 dark:bg-white/[.06] dark:text-zinc-50">
-                    {JSON.stringify(colors, null, 2).slice(0, 4000)}
+                    {JSON.stringify(colors, null, 2).slice(0, 12000)}
                   </pre>
                 </div>
               ) : (
@@ -112,10 +157,30 @@ export default async function DemoPearShopPage() {
                   storeFront.colors 缺失
                 </div>
               )}
+
+              {fonts ? (
+                <div className="mt-4">
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    storeFront.fonts（截断）
+                  </div>
+                  <pre className="mt-2 max-h-80 overflow-auto rounded-xl bg-black/[.04] p-4 text-xs text-zinc-900 dark:bg-white/[.06] dark:text-zinc-50">
+                    {JSON.stringify(fonts, null, 2).slice(0, 12000)}
+                  </pre>
+                </div>
+              ) : null}
+
+              <div className="mt-4">
+                <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                  原始 JSON（更长截断，方便对照）
+                </div>
+                <pre className="mt-2 max-h-[520px] overflow-auto rounded-xl bg-black/[.04] p-4 text-xs text-zinc-900 dark:bg-white/[.06] dark:text-zinc-50">
+                  {JSON.stringify(result.data, null, 2).slice(0, 20000)}
+                </pre>
+              </div>
             </>
           ) : (
             <pre className="mt-4 max-h-80 overflow-auto rounded-xl bg-black/[.04] p-4 text-xs text-zinc-900 dark:bg-white/[.06] dark:text-zinc-50">
-              {JSON.stringify(result, null, 2).slice(0, 4000)}
+              {JSON.stringify(result, null, 2).slice(0, 20000)}
             </pre>
           )}
         </div>
