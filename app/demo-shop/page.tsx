@@ -1,26 +1,8 @@
 import { PublishControls } from "./PublishControls";
-
-type BackendPayload = {
-  hits: number;
-  backendServedAt: string;
-};
-
-async function getShopHomeData(): Promise<BackendPayload> {
-  const res = await fetch("http://localhost:3000/api/demo-backend", {
-    // 关键：给这份数据打 tag，后续用 revalidateTag 精确失效。
-    next: { tags: ["demo:shop-home"] },
-  });
-
-  if (!res.ok) {
-    throw new Error(`demo-backend failed: HTTP ${res.status}`);
-  }
-
-  return (await res.json()) as BackendPayload;
-}
+import { getShopHomeData } from "./data";
 
 export default async function DemoShopHomePage() {
   const data = await getShopHomeData();
-  const renderedAt = new Date().toISOString();
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -34,7 +16,7 @@ export default async function DemoShopHomePage() {
             页面渲染时间（renderedAt）
           </div>
           <div className="mt-1 font-mono text-sm text-zinc-900 dark:text-zinc-50">
-            {renderedAt}
+            {data.backendServedAt}
           </div>
 
           <div className="mt-5 text-sm text-zinc-600 dark:text-zinc-400">
