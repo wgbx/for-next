@@ -27,6 +27,61 @@ type PearApiEnvelope = {
   };
 };
 
+function normalizeSocialHref(type?: string, account?: string): string | null {
+  const t = (type ?? "").toUpperCase();
+  const raw = (account ?? "").trim();
+  if (!raw) return null;
+
+  // already a url
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (t === "EMAIL") return `mailto:${raw}`;
+
+  const handle = raw.replace(/^@/, "");
+  switch (t) {
+    case "INSTAGRAM":
+      return `https://instagram.com/${handle}`;
+    case "TIKTOK":
+      return `https://www.tiktok.com/@${handle}`;
+    case "X":
+    case "TWITTER":
+      return `https://x.com/${handle}`;
+    case "YOUTUBE":
+      return `https://youtube.com/${handle}`;
+    case "THREADS":
+      return `https://www.threads.net/@${handle}`;
+    case "DISCORD":
+      // 既可能是 invite url，也可能是 username；这里只能尽量兜底
+      return raw.includes(".gg/") || raw.includes("discord.com")
+        ? `https://${raw.replace(/^https?:\/\//i, "")}`
+        : null;
+    case "SPOTIFY":
+      return `https://open.spotify.com/${handle}`;
+    case "APPLE":
+      return `https://music.apple.com/${handle}`;
+    case "SOUNDCLOUD":
+      return `https://soundcloud.com/${handle}`;
+    case "BANDCAMP":
+      return `https://${handle}.bandcamp.com`;
+    case "LINKEDIN":
+      return `https://linkedin.com/in/${handle}`;
+    case "FACEBOOK":
+      return `https://facebook.com/${handle}`;
+    default:
+      return null;
+  }
+}
+
+function pickKeyColor(colors: Record<string, string> | null): string | null {
+  if (!colors) return null;
+  return (
+    colors.storefrontBgColor ??
+    colors.cardTextColor ??
+    colors.ctaButtonBgColor ??
+    Object.values(colors).find((v) => typeof v === "string" && v.startsWith("#")) ??
+    null
+  );
+}
+
 export default async function DemoPearShopPage() {
   const vanityUrl = "wgbx";
   const result = await fetchPearUserByVanityUrl(vanityUrl);
@@ -37,6 +92,8 @@ export default async function DemoPearShopPage() {
   const fonts = shop?.storeFront?.fonts ?? null;
   const tabs = shop?.storeFront?.storeTabs ?? null;
   const socials = shop?.socialMedias ?? null;
+  const bg = shop?.backgroundImage ?? null;
+  const accent = pickKeyColor(colors);
 
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -44,6 +101,137 @@ export default async function DemoPearShopPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
           Demo：Pear 店铺首页（页面缓存 + 按需清除）
         </h1>
+
+        {/* Shop-like page (visual) */}
+        {result.ok ? (
+          <section className="overflow-hidden rounded-2xl border border-black/[.08] bg-white shadow-sm dark:border-white/[.14] dark:bg-black">
+            <div className="relative">
+              <div
+                className="h-56 w-full bg-zinc-200 dark:bg-zinc-900"
+                style={
+                  bg
+                    ? {
+                        backgroundImage: `url(${bg})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }
+                    : undefined
+                }
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
+
+              <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
+                <div className="flex items-end gap-4">
+                  <div
+                    className="h-20 w-20 overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur"
+                    style={accent ? { boxShadow: `0 0 0 2px ${accent} inset` } : undefined}
+                  >
+                    {shop?.logo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        alt="logo"
+                        src={shop.logo}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="text-xl font-semibold tracking-tight text-white">
+                        {shop?.storeName ?? "(missing storeName)"}
+                      </div>
+                      {shop?.pearVerified ? (
+                        <span className="rounded-full bg-white/15 px-2 py-1 text-xs font-medium text-white backdrop-blur">
+                          PEAR VERIFIED
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="text-sm text-white/80">
+                      pear.us/{shop?.vanityUrl ?? vanityUrl}
+                      {shop?.subTitle ? ` · ${shop.subTitle}` : ""}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 sm:p-6">
+              {shop?.description ? (
+                <p className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+                  {shop.description}
+                </p>
+              ) : null}
+
+              {socials?.length ? (
+                <div className="mt-5">
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    Social
+                  </div>
+                  <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {socials
+                      .filter((s) => s?.account)
+                      .slice(0, 10)
+                      .map((s, idx) => {
+                        const href = normalizeSocialHref(s.type, s.account);
+                        const label = (s.type ?? "UNKNOWN").toUpperCase();
+                        return (
+                          <a
+                            key={`${label}-${idx}`}
+                            href={href ?? undefined}
+                            target={href ? "_blank" : undefined}
+                            rel={href ? "noreferrer" : undefined}
+                            className="group flex items-center justify-between rounded-xl border border-black/[.08] bg-white px-4 py-3 text-sm transition-colors hover:bg-black/[.02] dark:border-white/[.14] dark:bg-black dark:hover:bg-white/[.04]"
+                          >
+                            <div className="flex flex-col">
+                              <div className="font-medium text-zinc-900 dark:text-zinc-50">
+                                {label}
+                              </div>
+                              <div className="font-mono text-xs text-zinc-600 dark:text-zinc-400 break-all">
+                                {href ?? s.account ?? ""}
+                              </div>
+                            </div>
+                            <div className="text-zinc-400 transition-transform group-hover:translate-x-0.5 dark:text-zinc-500">
+                              →
+                            </div>
+                          </a>
+                        );
+                      })}
+                  </div>
+                </div>
+              ) : null}
+
+              {colors ? (
+                <div className="mt-6">
+                  <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    Theme colors (preview)
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {Object.entries(colors)
+                      .slice(0, 12)
+                      .map(([k, v]) => (
+                        <div
+                          key={k}
+                          className="rounded-xl border border-black/[.08] p-3 dark:border-white/[.14]"
+                        >
+                          <div
+                            className="h-9 w-full rounded-lg"
+                            style={{ background: v }}
+                            title={v}
+                          />
+                          <div className="mt-2 text-[11px] font-medium text-zinc-900 dark:text-zinc-50">
+                            {k}
+                          </div>
+                          <div className="font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
+                            {v}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </section>
+        ) : null}
 
         <div className="rounded-2xl border border-black/[.08] bg-white p-6 shadow-sm dark:border-white/[.14] dark:bg-black">
           <div className="text-sm text-zinc-600 dark:text-zinc-400">
