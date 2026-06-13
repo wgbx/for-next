@@ -1,5 +1,6 @@
 "use client";
 
+import { routes } from "@/app/routes";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -12,7 +13,7 @@ export function PublishControls() {
     setPublishing(true);
     setLastResult("");
     try {
-      const res = await fetch("/api/demo-publish", { method: "POST" });
+      const res = await fetch(routes.api.publish, { method: "POST" });
       const json = (await res.json()) as { publishedAt?: string };
       setLastResult(
         res.ok

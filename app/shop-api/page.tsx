@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { PublishControls } from "../demo-shop/PublishControls";
-import { ShopHomeClient } from "../demo-shop/ShopHomeClient";
+import { PublishControls } from "../shop/PublishControls";
+import { ShopHomeClient } from "../shop/ShopHomeClient";
+import { routes } from "@/app/routes";
 
 export default async function DemoShopApiPage() {
   return (
@@ -12,8 +13,8 @@ export default async function DemoShopApiPage() {
 
         <div className="text-sm text-zinc-600 dark:text-zinc-400">
           想看“页面缓存”请去{" "}
-          <Link href="/demo-shop" className="font-medium text-zinc-900 dark:text-zinc-50 underline">
-            /demo-shop
+          <Link href={routes.shop} className="font-medium text-zinc-900 dark:text-zinc-50 underline">
+            {routes.shop}
           </Link>
         </div>
 
