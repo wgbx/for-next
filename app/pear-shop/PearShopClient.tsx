@@ -1,5 +1,6 @@
 "use client";
 
+import { routes } from "@/app/routes";
 import { useEffect, useState } from "react";
 
 type ApiPayload =
@@ -29,7 +30,7 @@ export function PearShopClient() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/demo-pear-user");
+      const res = await fetch(routes.api.pearUser);
       const json = (await res.json()) as ApiPayload;
       setPayload(json);
     } catch (e) {
@@ -48,7 +49,7 @@ export function PearShopClient() {
   return (
     <div className="rounded-2xl border border-black/[.08] bg-white p-6 shadow-sm dark:border-white/[.14] dark:bg-black">
       <div className="text-sm text-zinc-600 dark:text-zinc-400">
-        客户端请求 <span className="font-mono">/api/demo-pear-user</span>，由 Next 在服务端缓存“外部后端”的响应
+        客户端请求 <span className="font-mono">{routes.api.pearUser}</span>，由 Next 在服务端缓存“外部后端”的响应
       </div>
 
       <div className="mt-4 flex flex-col gap-2 font-mono text-sm text-zinc-900 dark:text-zinc-50">

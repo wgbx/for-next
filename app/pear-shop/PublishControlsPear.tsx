@@ -1,5 +1,6 @@
 "use client";
 
+import { routes } from "@/app/routes";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -12,7 +13,7 @@ export function PublishControlsPear() {
     setPublishing(true);
     setLastResult("");
     try {
-      const res = await fetch("/api/demo-pear-page-clear", { method: "POST" });
+      const res = await fetch(routes.api.pearPageClear, { method: "POST" });
       const json = (await res.json()) as { clearedAt?: string };
       setLastResult(
         res.ok ? `已清除页面缓存：${json.clearedAt ?? ""}` : `失败：HTTP ${res.status}`

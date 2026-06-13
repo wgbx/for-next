@@ -4,7 +4,7 @@ import {
   PEAR_DEFAULT_BASE_URL,
   PEAR_DEMO_TAG,
   type PearVanityUser,
-} from "@/app/demo-pear-shop/data";
+} from "@/app/pear-shop/data";
 
 declare global {
   // eslint-disable-next-line no-var

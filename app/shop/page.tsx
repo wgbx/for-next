@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PublishControls } from "./PublishControls";
 import { getShopHomeData } from "./data";
+import { routes } from "@/app/routes";
 
 export default async function DemoShopHomePage() {
   const data = await getShopHomeData();
@@ -15,10 +16,10 @@ export default async function DemoShopHomePage() {
         <div className="text-sm text-zinc-600 dark:text-zinc-400">
           想看“接口缓存”请去{" "}
           <Link
-            href="/demo-shop-api"
+            href={routes.shopApi}
             className="font-medium text-zinc-900 dark:text-zinc-50 underline"
           >
-            /demo-shop-api
+            {routes.shopApi}
           </Link>
         </div>
 
@@ -45,7 +46,7 @@ export default async function DemoShopHomePage() {
               再 <span className="font-mono">pnpm start</span>
             </li>
             <li>
-              用户 A 先打开 <span className="font-mono">/demo-shop</span>（触发一次取数），
+              用户 A 先打开 <span className="font-mono">{routes.shop}</span>（触发一次取数），
               然后用户 B 打开同一个页面：只要没点“模拟发布”，{" "}
               <span className="font-mono">hits</span> 应该保持不变（说明页面结果被复用）
             </li>

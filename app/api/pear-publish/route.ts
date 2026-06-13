@@ -1,7 +1,7 @@
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
-import { PEAR_DEMO_TAG } from "@/app/demo-pear-shop/data";
+import { PEAR_DEMO_TAG } from "@/app/pear-shop/data";
 
 export async function POST() {
   revalidateTag(PEAR_DEMO_TAG, "default");

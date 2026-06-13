@@ -1,5 +1,6 @@
 "use client";
 
+import { routes } from "@/app/routes";
 import { useEffect, useState } from "react";
 
 type ApiPayload = {
@@ -17,7 +18,7 @@ export function ShopHomeClient() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/demo-shop-home", { method: "GET" });
+      const res = await fetch(routes.api.shopHome, { method: "GET" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setData((await res.json()) as ApiPayload);
     } catch (e) {
