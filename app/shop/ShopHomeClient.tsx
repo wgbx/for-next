@@ -1,48 +1,47 @@
 "use client";
 
-import { routes } from "@/app/routes";
-import { useEffect, useState } from "react";
-
-type ApiPayload = {
-  hits: number;
-  backendServedAt: string;
-  servedBy: string;
-};
+import { shopHomeQueryAtom } from "@/lib/atoms/shop";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import { useAtomValue } from "jotai";
 
 export function ShopHomeClient() {
-  const [data, setData] = useState<ApiPayload | null>(null);
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-
-  async function load() {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch(routes.api.shopHome, { method: "GET" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setData((await res.json()) as ApiPayload);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { data, isPending, isError, error, refetch, isFetching } =
+    useAtomValue(shopHomeQueryAtom);
 
   return (
-    <div className="rounded-2xl border border-black/[.08] bg-white p-6 shadow-sm dark:border-white/[.14] dark:bg-black">
-      <div className="text-sm text-zinc-600 dark:text-zinc-400">
+    <Paper elevation={0} variant="outlined" sx={{ p: 3, borderRadius: 4 }}>
+      <Typography variant="body2" color="text.secondary">
         客户端请求接口（每个用户都会请求一次，但接口背后应复用缓存）
-      </div>
+      </Typography>
 
-      <div className="mt-4 flex flex-col gap-2 font-mono text-sm text-zinc-900 dark:text-zinc-50">
-        {loading ? <div>loading…</div> : null}
-        {error ? <div className="text-red-600 dark:text-red-400">{error}</div> : null}
+      <Box
+        sx={{
+          mt: 2,
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+          fontFamily: "monospace",
+          fontSize: 14,
+        }}
+      >
+        {isPending ? (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <CircularProgress size={18} />
+            <span>loading…</span>
+          </Box>
+        ) : null}
+
+        {isError ? (
+          <Alert severity="error">
+            {error instanceof Error ? error.message : String(error)}
+          </Alert>
+        ) : null}
+
         {data ? (
           <>
             <div>servedBy={data.servedBy}</div>
@@ -50,18 +49,17 @@ export function ShopHomeClient() {
             <div>backendServedAt={data.backendServedAt}</div>
           </>
         ) : null}
-      </div>
+      </Box>
 
-      <div className="mt-4">
-        <button
-          type="button"
-          onClick={() => void load()}
-          className="inline-flex h-11 items-center justify-center rounded-full border border-solid border-black/[.10] px-5 transition-colors hover:bg-black/[.04] dark:border-white/[.18] dark:hover:bg-[#1a1a1a]"
+      <Box sx={{ mt: 2 }}>
+        <Button
+          variant="outlined"
+          onClick={() => void refetch()}
+          disabled={isFetching}
         >
-          只刷新接口（不刷新整页）
-        </button>
-      </div>
-    </div>
+          {isFetching ? "刷新中…" : "只刷新接口（不刷新整页）"}
+        </Button>
+      </Box>
+    </Paper>
   );
 }
-
