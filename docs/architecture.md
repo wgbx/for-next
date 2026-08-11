@@ -7,12 +7,12 @@
 
 ## 1. 项目目标
 
-本仓库不是业务生产项目，而是一个**缓存策略对照实验场**，用来回答两类问题：
+本仓库不是业务生产项目，而是一个**持续累积的 Next.js / React demo 验证池**：每个 demo 独立验证一个技术点，互不依赖。当前收录两类：
 
-1. **页面缓存**：用户 A 访问后，用户 B 访问同一路径时，能否不再触发 SSR / 上游请求？
-2. **接口缓存**：页面必须走客户端请求时，能否让 Next 服务端复用对外部 API 的 `fetch` 结果，降低后端压力？
+1. **缓存策略**：页面缓存（ISR）与接口缓存（Data Cache）的对照，回答"用户 B 访问同一路径/接口时，能否不再触发 SSR / 上游请求？"
+2. **状态管理与渲染**：不同状态管理方案在渲染行为上的差异，例如 React Context vs Jotai 的订阅粒度对比。
 
-三个演示页分别展示不同策略；首页 `/` 汇总入口与说明。
+首页 `/` 按分类分组汇总所有 demo 入口。新增分类时无需改动首页结构，只需在 `app/routes.ts` 的 `pages` 中声明新的 `category`。
 
 ---
 
@@ -103,15 +103,16 @@ export const routes = {
 export const pages = [/* 首页卡片元数据 */] as const;
 ```
 
-### 4.2 三个演示页对照
+### 4.2 演示页对照
 
-| 路径 | 缓存策略 | 取数方式 | 用户 B 的体验 |
-|------|----------|----------|---------------|
-| `/shop` | **页面缓存** + Component Cache | Server Component 直接调用 `getShopHomeData()` | 命中页面缓存，无客户端 loading，`hits` 不变 |
-| `/shop-api` | **接口缓存**（Data Cache） | Client Component `fetch /api/shop-home` | 每次有 loading，但 `hits` 不变（服务端复用缓存） |
-| `/pear-shop` | **页面缓存** + `fetch` tag 缓存 | Server Component 调用 `fetchPearUserByVanityUrl()` | 命中页面缓存，`fetchedAt` 不变；清缓存后重新请求上游 |
+| 分类 | 路径 | 策略 | 取数方式 | 用户 B 的体验 |
+|------|------|------|----------|---------------|
+| 缓存策略 | `/shop` | **页面缓存** + Component Cache | Server Component 直接调用 `getShopHomeData()` | 命中页面缓存，无客户端 loading，`hits` 不变 |
+| 缓存策略 | `/shop-api` | **接口缓存**（Data Cache） | Client Component `fetch /api/shop-home` | 每次有 loading，但 `hits` 不变（服务端复用缓存） |
+| 缓存策略 | `/pear-shop` | **页面缓存** + `fetch` tag 缓存 | Server Component 调用 `fetchPearUserByVanityUrl()` | 命中页面缓存，`fetchedAt` 不变；清缓存后重新请求上游 |
+| 状态管理与渲染 | `/provider-render` | React Context vs Jotai | 纯客户端 `useState` + `useContext` / `useAtomValue` | 同一次点击下，Context 侧全部消费者重渲，Jotai 侧只有订阅对应 atom 的组件重渲 |
 
-首页 `app/page.tsx` 读取 `pages` 数组渲染导航卡片。
+首页 `app/page.tsx` 读取 `pages` 数组，按 `category` 分组渲染导航卡片。
 
 ---
 
@@ -313,3 +314,4 @@ pnpm build && pnpm start   # ★ 验证 ISR / 缓存请用生产模式
 3. 需要客户端拉取时，抽 `*Client.tsx`，Route Handler 复用 `data.ts`
 4. 发布/变更时提供 `POST /api/<feature>-clear`，统一 `revalidateTag` + `revalidatePath`
 5. tag 命名：`业务:资源:标识`，如 `shop:${shopId}`，避免随机 tag 导致无法精准失效
+6. 目录命名：涉及外部数据/缓存的 demo 沿用业务化命名（如 `shop`）；纯粹验证某个 Next.js / React 技术点的 demo，目录名直接描述技术主题（如 `provider-render`），不套业务场景
