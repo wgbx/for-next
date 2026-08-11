@@ -15,11 +15,9 @@
       "Skill(code-review:*)",
       "Skill(simplify)",
       "Skill(simplify:*)",
-
       "Edit",
       "Write",
       "Read",
-
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
@@ -30,7 +28,6 @@
       "Bash(git commit*)",
       "Bash(git stash*)",
       "Bash(git fetch*)",
-
       "Bash(ls*)",
       "Bash(pwd)",
       "Bash(find *)",
@@ -39,14 +36,14 @@
       "Bash(lsof *)",
       "Bash(curl *localhost*)",
       "Bash(curl *127.0.0.1*)",
-
       "Bash(npm run *)",
       "Bash(npm install)",
       "Bash(npm ci)",
       "Bash(npx next *)",
       "Bash(next dev*)",
       "Bash(next build*)",
-      "Bash(next lint*)"
+      "Bash(next lint*)",
+      "WebSearch"
     ],
     "deny": [
       "Bash(git push --force*)",
