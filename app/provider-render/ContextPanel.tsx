@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, memo, useContext } from "react";
 
 import { useRenderCount } from "./useRenderCount";
 
@@ -16,7 +16,7 @@ function Badge({ children }: { children: number }) {
   );
 }
 
-function CountDisplay() {
+const CountDisplay = memo(function CountDisplay() {
   const value = useContext(DemoContext);
   const renderCount = useRenderCount();
   return (
@@ -26,9 +26,9 @@ function CountDisplay() {
       <Badge>{renderCount}</Badge>
     </div>
   );
-}
+});
 
-function NameDisplay() {
+const NameDisplay = memo(function NameDisplay() {
   const value = useContext(DemoContext);
   const renderCount = useRenderCount();
   return (
@@ -38,7 +38,7 @@ function NameDisplay() {
       <Badge>{renderCount}</Badge>
     </div>
   );
-}
+});
 
 export function ContextPanel({ count, name }: DemoValue) {
   const value: DemoValue = { count, name };

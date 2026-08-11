@@ -1,6 +1,6 @@
 "use client";
 
-import { useSetAtom } from "jotai";
+import { Provider as JotaiProvider, useSetAtom } from "jotai";
 import { useState } from "react";
 
 import { countAtom, nameAtom } from "@/lib/atoms/provider-render";
@@ -11,6 +11,21 @@ import { JotaiPanel } from "./JotaiPanel";
 const NAMES = ["Ann", "Bob", "Cara", "Dan"];
 
 export default function ProviderRenderPage() {
+  // Page-scoped Jotai store: the root layout's <JotaiProvider> (app/providers.tsx)
+  // wraps the whole app and its store survives client-side navigation, but this
+  // demo's premise is "the same operation applied to both sides" — so the Jotai
+  // side needs to reset exactly when the Context side's useState resets, i.e. on
+  // every mount of this page. A bare <JotaiProvider> with no `store` prop creates
+  // its own fresh, isolated store per mount (see jotai's react/Provider source),
+  // which shadows the app-wide store for everything rendered inside it.
+  return (
+    <JotaiProvider>
+      <ProviderRenderContent />
+    </JotaiProvider>
+  );
+}
+
+function ProviderRenderContent() {
   const [count, setCount] = useState(0);
   const [nameIndex, setNameIndex] = useState(0);
   const [resetKey, setResetKey] = useState(0);
@@ -85,6 +100,14 @@ export default function ProviderRenderPage() {
           <p className="mt-2">
             Jotai 侧只有 Count 组件重渲染，因为 countAtom 和 nameAtom
             是两个独立的订阅源，组件只订阅自己用到的 atom。
+          </p>
+          <p className="mt-2">
+            精确数字仅供参考，会受到两个已知因素影响：开发模式下 React
+            Strict Mode 会将渲染双重执行，徽标数字大约是生产环境的 2
+            倍；另外每个 atom 自 mount
+            后的第一次写入会让订阅者的徽标多计 1 次（一次性的 Jotai
+            初始化开销，之后的写入都是干净的 +1）。想看最干净的数字，用
+            `pnpm build && pnpm start` 运行。
           </p>
         </div>
       </main>
