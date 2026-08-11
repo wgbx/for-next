@@ -1,5 +1,7 @@
 "use client";
 
+import { memo } from "react";
+
 import { useAtomValue } from "jotai";
 
 import { countAtom, nameAtom } from "@/lib/atoms/provider-render";
@@ -38,7 +40,7 @@ function NameDisplay() {
   );
 }
 
-export function JotaiPanel() {
+export const JotaiPanel = memo(function JotaiPanel() {
   return (
     <div className="flex flex-col gap-3">
       <h3 className="font-semibold text-black dark:text-zinc-50">Jotai</h3>
@@ -46,4 +48,4 @@ export function JotaiPanel() {
       <NameDisplay />
     </div>
   );
-}
+});

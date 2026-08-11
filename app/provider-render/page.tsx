@@ -72,8 +72,8 @@ export default function ProviderRenderPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-          <ContextPanel key={resetKey} count={count} name={name} />
-          <JotaiPanel key={resetKey} />
+          <ContextPanel key={`context-${resetKey}`} count={count} name={name} />
+          <JotaiPanel key={`jotai-${resetKey}`} />
         </div>
 
         <div className="rounded-lg bg-zinc-100 p-4 text-sm text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
