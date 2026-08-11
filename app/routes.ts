@@ -19,15 +19,18 @@ export const pages = [
     path: routes.shop,
     title: "页面缓存",
     description: "用户间复用，发布后更新。服务端渲染 + 页面级缓存（没有客户端请求接口）",
+    category: "缓存策略",
   },
   {
     path: routes.shopApi,
     title: "接口缓存",
     description: "客户端每次请求，但后端取数复用缓存",
+    category: "缓存策略",
   },
   {
     path: routes.pearShop,
     title: "Pear 店铺首页",
     description: "页面缓存 + 按需清除。演示 SSR 取数和上游 API 响应",
+    category: "缓存策略",
   },
 ] as const;
