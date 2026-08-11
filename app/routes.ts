@@ -4,6 +4,7 @@ export const routes = {
   shop: "/shop",
   shopApi: "/shop-api",
   pearShop: "/pear-shop",
+  providerRender: "/provider-render",
   api: {
     backend: "/api/backend",
     shopHome: "/api/shop-home",
@@ -32,5 +33,11 @@ export const pages = [
     title: "Pear 店铺首页",
     description: "页面缓存 + 按需清除。演示 SSR 取数和上游 API 响应",
     category: "缓存策略",
+  },
+  {
+    path: routes.providerRender,
+    title: "Provider 渲染次数对比",
+    description: "React Context vs Jotai：同一次状态更新，谁的订阅者重渲染了？",
+    category: "状态管理与渲染",
   },
 ] as const;
