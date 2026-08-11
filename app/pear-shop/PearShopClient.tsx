@@ -21,29 +21,49 @@ type ApiPayload =
       error?: string;
     };
 
+async function fetchPearUser(): Promise<
+  { ok: true; payload: ApiPayload } | { ok: false; message: string }
+> {
+  try {
+    const res = await fetch(routes.api.pearUser);
+    const json = (await res.json()) as ApiPayload;
+    return { ok: true, payload: json };
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : String(e) };
+  }
+}
+
 export function PearShopClient() {
   const [loading, setLoading] = useState(true);
   const [payload, setPayload] = useState<ApiPayload | null>(null);
   const [error, setError] = useState<string>("");
 
-  async function load() {
+  function applyResult(
+    result: { ok: true; payload: ApiPayload } | { ok: false; message: string },
+  ) {
+    if (result.ok) {
+      setPayload(result.payload);
+    } else {
+      setError(result.message);
+      setPayload(null);
+    }
+    setLoading(false);
+  }
+
+  function load() {
     setLoading(true);
     setError("");
-    try {
-      const res = await fetch(routes.api.pearUser);
-      const json = (await res.json()) as ApiPayload;
-      setPayload(json);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-      setPayload(null);
-    } finally {
-      setLoading(false);
-    }
+    fetchPearUser().then(applyResult);
   }
 
   useEffect(() => {
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let ignore = false;
+    fetchPearUser().then((result) => {
+      if (!ignore) applyResult(result);
+    });
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return (
@@ -80,7 +100,7 @@ export function PearShopClient() {
       <div className="mt-4">
         <button
           type="button"
-          onClick={() => void load()}
+          onClick={load}
           className="inline-flex h-11 items-center justify-center rounded-full border border-solid border-black/[.10] px-5 transition-colors hover:bg-black/[.04] dark:border-white/[.18] dark:hover:bg-[#1a1a1a]"
         >
           只刷新接口
