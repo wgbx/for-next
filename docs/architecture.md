@@ -141,6 +141,12 @@ for-next/
 │   │   ├── PublishControlsPear.tsx
 │   │   └── PearShopClient.tsx    # 客户端版（当前未挂载到 page，供对照/扩展）
 │   │
+│   ├── provider-render/          # Demo 4：React Context vs Jotai 渲染次数对比
+│   │   ├── page.tsx              # ★ 客户端状态编排；本地 <JotaiProvider> 隔离 store
+│   │   ├── ContextPanel.tsx      # useContext 消费者（memo 包裹，隔离 Context 传播路径）
+│   │   ├── JotaiPanel.tsx        # useAtomValue 消费者
+│   │   └── useRenderCount.ts     # 共享的渲染计数 hook
+│   │
 │   └── api/                      # Route Handlers
 │       ├── backend/route.ts      # 模拟外部后端（hits 计数器）
 │       ├── shop-home/route.ts    # 接口缓存入口，复用 getShopHomeData()
@@ -148,6 +154,10 @@ for-next/
 │       ├── pear-page-clear/route.ts  # POST → revalidateTag + revalidatePath
 │       ├── pear-publish/route.ts     # POST → 仅 revalidateTag
 │       └── pear-user/route.ts        # GET → 带 tag 的 fetch Pear API
+│
+├── lib/                           # 跨路由共享逻辑
+│   └── atoms/
+│       └── provider-render.ts    # countAtom / nameAtom（Demo 4 用）
 │
 ├── docs/                         # 项目文档
 │   ├── architecture.md           # 本文档
@@ -307,7 +317,7 @@ pnpm build && pnpm start   # ★ 验证 ISR / 缓存请用生产模式
 
 ## 11. 扩展指南
 
-若新增第四个演示或接入真实业务，建议遵循现有模式：
+若新增其他演示或接入真实业务，建议遵循现有模式：
 
 1. 在 `app/routes.ts` 注册路径与 API
 2. 新建 `app/<feature>/page.tsx` + `data.ts`（缓存逻辑集中在此）
