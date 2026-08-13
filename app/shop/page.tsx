@@ -1,14 +1,14 @@
 import Link from "next/link";
+import { routes } from "@/app/routes";
 import { PublishControls } from "./PublishControls";
 import { getShopHomeData } from "./data";
-import { routes } from "@/app/routes";
 
 export default async function DemoShopHomePage() {
   const data = await getShopHomeData();
 
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full max-w-3xl flex-col gap-6 px-6 py-16 sm:px-10">
+    <div className="flex flex-col flex-1 items-center bg-zinc-50 font-sans dark:bg-zinc-950">
+      <main className="flex flex-1 w-full max-w-5xl flex-col gap-6 py-16 px-6 sm:px-16 bg-white dark:bg-zinc-900">
         <h1 className="text-2xl font-semibold tracking-tight text-black dark:text-zinc-50">
           Demo：页面缓存（用户间复用，发布后更新）
         </h1>

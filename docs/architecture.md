@@ -124,6 +124,7 @@ for-next/
 │   ├── layout.tsx                # 根布局（metadata、globals.css）
 │   ├── page.tsx                  # 首页：ISR 演示导航
 │   ├── routes.ts                 # ★ 全站路由常量 + 首页卡片配置
+│   ├── BackHomeLink.tsx          # 子页固定左上角「返回首页」（首页不显示）
 │   ├── globals.css               # Tailwind 全局样式
 │   │
 │   ├── shop/                     # Demo 1：页面缓存
@@ -320,7 +321,7 @@ pnpm build && pnpm start   # ★ 验证 ISR / 缓存请用生产模式
 若新增其他演示或接入真实业务，建议遵循现有模式：
 
 1. 在 `app/routes.ts` 注册路径与 API
-2. 新建 `app/<feature>/page.tsx` + `data.ts`（缓存逻辑集中在此）
+2. 新建 `app/<feature>/page.tsx` + `data.ts`（缓存逻辑集中在此）；返回首页由根布局的 `<BackHomeLink />` 自动出现
 3. 需要客户端拉取时，抽 `*Client.tsx`，Route Handler 复用 `data.ts`
 4. 发布/变更时提供 `POST /api/<feature>-clear`，统一 `revalidateTag` + `revalidatePath`
 5. tag 命名：`业务:资源:标识`，如 `shop:${shopId}`，避免随机 tag 导致无法精准失效

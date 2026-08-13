@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BackHomeLink } from "./BackHomeLink";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -15,7 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+        <Providers>
+          <BackHomeLink />
+          {children}
+        </Providers>
       </body>
     </html>
   );
