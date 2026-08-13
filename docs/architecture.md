@@ -7,10 +7,11 @@
 
 ## 1. 项目目标
 
-本仓库不是业务生产项目，而是一个**持续累积的 Next.js / React demo 验证池**：每个 demo 独立验证一个技术点，互不依赖。当前收录两类：
+本仓库不是业务生产项目，而是一个**持续累积的 Next.js / React demo 验证池**：每个 demo 独立验证一个技术点，互不依赖。当前收录三类：
 
 1. **缓存策略**：页面缓存（ISR）与接口缓存（Data Cache）的对照，回答"用户 B 访问同一路径/接口时，能否不再触发 SSR / 上游请求？"
 2. **状态管理与渲染**：不同状态管理方案在渲染行为上的差异，例如 React Context vs Jotai 的订阅粒度对比。
+3. **客户端数据获取**：TanStack Query 的 queryKey / 缓存 / 乐观更新，和 Next.js Data Cache 不是一层。
 
 首页 `/` 按分类分组汇总所有 demo 入口。新增分类时无需改动首页结构，只需在 `app/routes.ts` 的 `pages` 中声明新的 `category`。
 
@@ -22,6 +23,7 @@
 |------|------|------|
 | 框架 | Next.js 16 App Router | `app/` 目录，Server / Client Component 混用 |
 | UI | React 19 | 客户端交互组件标记 `"use client"` |
+| 客户端请求 | TanStack Query 5 | 根布局 `QueryClientProvider`；demo 用 `useQuery` / `useMutation` |
 | 语言 | TypeScript 5 | 严格模式，`@/*` 路径别名 |
 | 样式 | Tailwind CSS 4 | `app/globals.css` + PostCSS |
 | 包管理 | pnpm | `pnpm-workspace.yaml` |
@@ -90,6 +92,7 @@ export const routes = {
   shop: "/shop",           // 页面缓存 demo
   shopApi: "/shop-api",    // 接口缓存 demo
   pearShop: "/pear-shop",  // 真实上游 API + 页面缓存 demo
+  reactQuery: "/react-query", // TanStack useQuery demo
   api: {
     backend: "/api/backend",
     shopHome: "/api/shop-home",
@@ -111,6 +114,7 @@ export const pages = [/* 首页卡片元数据 */] as const;
 | 缓存策略 | `/shop-api` | **接口缓存**（Data Cache） | Client Component `fetch /api/shop-home` | 每次有 loading，但 `hits` 不变（服务端复用缓存） |
 | 缓存策略 | `/pear-shop` | **页面缓存** + `fetch` tag 缓存 | Server Component 调用 `fetchPearUserByVanityUrl()` | 命中页面缓存，`fetchedAt` 不变；清缓存后重新请求上游 |
 | 状态管理与渲染 | `/provider-render` | React Context vs Jotai | 纯客户端 `useState` + `useContext` / `useAtomValue` | 同一次点击下，Context 侧全部消费者重渲，Jotai 侧只有订阅对应 atom 的组件重渲 |
+| 客户端数据获取 | `/react-query` | TanStack Query Cache | `useQuery` / `useInfiniteQuery` / `useMutation` + mock `userApi` | 同一浏览器内二次进入详情无 loading；清缓存后重新转圈。不跨用户 |
 
 首页 `app/page.tsx` 读取 `pages` 数组，按 `category` 分组渲染导航卡片。
 
@@ -148,6 +152,13 @@ for-next/
 │   │   ├── JotaiPanel.tsx        # useAtomValue 消费者
 │   │   └── useRenderCount.ts     # 共享的渲染计数 hook
 │   │
+│   ├── react-query/              # Demo 5：TanStack useQuery
+│   │   ├── page.tsx
+│   │   ├── ReactQueryDemo.tsx    # 列表 / 详情 / 缓存面板 / 创建
+│   │   ├── useUsers.ts           # ★ userKeys + useQuery / useMutation
+│   │   ├── api.ts                # 内存 mock userApi（delay 模拟网络）
+│   │   └── types.ts
+│   │
 │   └── api/                      # Route Handlers
 │       ├── backend/route.ts      # 模拟外部后端（hits 计数器）
 │       ├── shop-home/route.ts    # 接口缓存入口，复用 getShopHomeData()
@@ -157,8 +168,10 @@ for-next/
 │       └── pear-user/route.ts        # GET → 带 tag 的 fetch Pear API
 │
 ├── lib/                           # 跨路由共享逻辑
+│   ├── query-client.ts           # QueryClient 工厂（根 Providers 使用）
 │   └── atoms/
-│       └── provider-render.ts    # countAtom / nameAtom（Demo 4 用）
+│       ├── provider-render.ts    # countAtom / nameAtom（Demo 4 用）
+│       └── shop.ts               # shopHomeQueryAtom（jotai-tanstack-query）
 │
 ├── docs/                         # 项目文档
 │   ├── architecture.md           # 本文档

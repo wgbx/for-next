@@ -5,6 +5,7 @@ export const routes = {
   shopApi: "/shop-api",
   pearShop: "/pear-shop",
   providerRender: "/provider-render",
+  reactQuery: "/react-query",
   api: {
     backend: "/api/backend",
     shopHome: "/api/shop-home",
@@ -39,5 +40,12 @@ export const pages = [
     title: "Provider 渲染次数对比",
     description: "React Context vs Jotai：同一次状态更新，谁的订阅者重渲染了？",
     category: "状态管理与渲染",
+  },
+  {
+    path: routes.reactQuery,
+    title: "React Query useQuery",
+    description:
+      "queryKey 工厂、无限列表、条件详情、乐观更新。客户端 Query Cache，不是 Next.js Data Cache。",
+    category: "客户端数据获取",
   },
 ] as const;
