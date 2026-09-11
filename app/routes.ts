@@ -6,6 +6,7 @@ export const routes = {
   pearShop: "/pear-shop",
   providerRender: "/provider-render",
   reactQuery: "/react-query",
+  iframeDebug: "/iframe-debug",
   api: {
     backend: "/api/backend",
     shopHome: "/api/shop-home",
@@ -47,5 +48,12 @@ export const pages = [
     description:
       "queryKey 工厂、无限列表、条件详情、乐观更新。客户端 Query Cache，不是 Next.js Data Cache。",
     category: "客户端数据获取",
+  },
+  {
+    path: routes.iframeDebug,
+    title: "iframe 嵌入调试",
+    description:
+      "Pear embed 预览 + postMessage 高度自适应日志，可改 src / iframeId / 初始高度",
+    category: "嵌入调试",
   },
 ] as const;
