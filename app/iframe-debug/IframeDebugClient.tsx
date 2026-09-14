@@ -8,14 +8,14 @@ import {
   type FormEvent,
 } from "react";
 
-/** 推荐交给宿主 A 的写法：640 只作占位；收到高度后同时改 section + iframe */
+/** 推荐交给宿主 A 的写法：section 定高占位，iframe height:100%；收到高度后只改 section */
 const RELEASE_ORIGIN = "https://release.pear.us";
 /** katana-web 本地默认（apps/web-common LOCAL_HOST） */
 const LOCAL_ORIGIN = "http://localhost:3000";
 
-const DEFAULT_SNIPPET = `<div class="iframe-section" style="min-height: 640px;">
+const DEFAULT_SNIPPET = `<div class="iframe-section" style="height: 640px;">
   <iframe
-    style="width: 100%; height: 640px; border: none; border-radius: 10px; padding: 0px"
+    style="width: 100%; height: 100%; border: none; border-radius: 10px; padding: 0px"
     id="venue-map-c79a39f1-6da0-4cb8-847c-be6a8c16c614-dz-event"
     sandbox="allow-same-origin allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox"
     src="${RELEASE_ORIGIN}/embed/dz/events/c79a39f1-6da0-4cb8-847c-be6a8c16c614?urlAlias=event&iframeId=venue-map-c79a39f1-6da0-4cb8-847c-be6a8c16c614-dz-event"
@@ -37,11 +37,9 @@ const DEFAULT_SNIPPET = `<div class="iframe-section" style="min-height: 640px;">
       ) {
         const iframe = document.getElementById(event.data.iframeId);
         if (iframe) {
-          var px = event.data.height + "px";
-          iframe.style.height = px;
-          var section = iframe.closest(".iframe-section");
+          const section = iframe.closest(".iframe-section");
           if (section) {
-            section.style.height = px;
+            section.style.height = event.data.height + "px";
           }
         }
       }
@@ -54,7 +52,7 @@ function toLocalSnippet(snippet: string): string {
 }
 
 type ParsedEmbed = {
-  sectionMinHeight: string;
+  sectionHeight: string;
   iframeId: string;
   src: string;
   title: string;
@@ -114,15 +112,14 @@ function isNoiseMessage(data: unknown): boolean {
 function readSectionPlaceholderHeight(section: Element | null): string {
   const style = section?.getAttribute("style") ?? "";
   return (
+    style.match(/(?:^|;)\s*height:\s*([^;]+)/i)?.[1]?.trim() ??
     style.match(/min-height:\s*([^;]+)/i)?.[1]?.trim() ??
-    style.match(/height:\s*([^;]+)/i)?.[1]?.trim() ??
     "640px"
   );
 }
 
-/** 宿主推荐：同时改 iframe 与外层 .iframe-section，避免外层 640 把内容裁掉 */
+/** 宿主推荐：只改 .iframe-section 的 height；iframe 保持 height:100% 跟着走 */
 function applyHostHeight(iframe: HTMLElement, heightPx: string) {
-  iframe.style.height = heightPx;
   const section = iframe.closest(".iframe-section");
   if (section instanceof HTMLElement) {
     section.style.height = heightPx;
@@ -150,7 +147,7 @@ function parseEmbedSnippet(snippet: string): ParsedEmbed | { error: string } {
     loadingAttr === "lazy" || loadingAttr === "eager" ? loadingAttr : undefined;
 
   return {
-    sectionMinHeight: readSectionPlaceholderHeight(section),
+    sectionHeight: readSectionPlaceholderHeight(section),
     iframeId,
     src,
     title: iframe.getAttribute("title") ?? "Ticket Booking",
@@ -159,7 +156,7 @@ function parseEmbedSnippet(snippet: string): ParsedEmbed | { error: string } {
     loading,
     iframeStyle:
       iframe.getAttribute("style") ??
-      "width: 100%; height: 640px; border: none; border-radius: 10px; padding: 0px",
+      "width: 100%; height: 100%; border: none; border-radius: 10px; padding: 0px",
     allowedOrigin: originMatch?.[1] ?? null,
   };
 }
@@ -210,13 +207,13 @@ export function IframeDebugClient() {
           if (messageIframeId === embed.iframeId) {
             setLiveHeight(px);
             appliedHeight = heightValue;
-            note = `已应用高度到 section + iframe → #${messageIframeId}`;
+            note = `已应用高度到 .iframe-section → #${messageIframeId}`;
           } else {
             const target = document.getElementById(messageIframeId);
             if (target) {
               applyHostHeight(target, px);
               appliedHeight = heightValue;
-              note = `已应用高度到 section + iframe → #${messageIframeId}`;
+              note = `已应用高度到 .iframe-section → #${messageIframeId}`;
             } else {
               note = `收到高度消息，但未找到 #${messageIframeId}`;
             }
@@ -277,9 +274,9 @@ export function IframeDebugClient() {
     loadParsed(toLocalSnippet(DEFAULT_SNIPPET));
   }
 
-  const sectionStyle: CSSProperties = liveHeight
-    ? { height: liveHeight }
-    : { minHeight: embed.sectionMinHeight };
+  const sectionStyle: CSSProperties = {
+    height: liveHeight ?? embed.sectionHeight,
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -293,8 +290,8 @@ export function IframeDebugClient() {
           </span>
           <span className="text-xs text-zinc-500 dark:text-zinc-400">
             粘贴交给宿主 A 的整段 HTML +
-            script。推荐：外层用 min-height 占位，收到 B 的高度后同时改 section 与
-            iframe。
+            script。推荐：section 用 height 占位，iframe 用 height:100%；收到 B
+            的高度后只改 section。
           </span>
           <textarea
             value={snippet}
@@ -363,7 +360,7 @@ export function IframeDebugClient() {
           <code>
             {liveHeight
               ? `applied=${liveHeight}`
-              : `placeholder min-height=${embed.sectionMinHeight}`}
+              : `placeholder height=${embed.sectionHeight}`}
           </code>
         </p>
       </form>
@@ -377,10 +374,7 @@ export function IframeDebugClient() {
           loading={embed.loading}
           allow={embed.allow || undefined}
           sandbox={embed.sandbox || undefined}
-          style={{
-            ...cssTextToStyle(embed.iframeStyle),
-            ...(liveHeight ? { height: liveHeight } : null),
-          }}
+          style={cssTextToStyle(embed.iframeStyle)}
         />
       </div>
 
@@ -396,8 +390,8 @@ export function IframeDebugClient() {
 
         {logs.length === 0 ? (
           <p className="rounded-lg bg-zinc-100 px-4 py-6 text-sm text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-            尚无消息。收到 B 的 height + iframeId 后，会同时更新{" "}
-            <code>.iframe-section</code> 与 iframe 高度。
+            尚无消息。收到 B 的 height + iframeId 后，会更新{" "}
+            <code>.iframe-section</code> 高度（iframe 仍为 height:100%）。
           </p>
         ) : (
           <ul className="flex max-h-[28rem] flex-col gap-2 overflow-y-auto">

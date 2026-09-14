@@ -10,8 +10,9 @@ export default function IframeDebugPage() {
           </h1>
           <p className="text-zinc-600 dark:text-zinc-400">
             粘贴交给宿主 A 的嵌入代码。B 通过{" "}
-            <code className="text-sm">postMessage</code> 回传高度后，A 应同时更新外层
-            section 与 iframe（640 仅作占位）。
+            <code className="text-sm">postMessage</code> 回传高度后，A 只更新{" "}
+            <code className="text-sm">.iframe-section</code> 的 height（iframe 保持
+            100%）。
           </p>
         </div>
 

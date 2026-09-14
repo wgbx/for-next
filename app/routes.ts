@@ -53,7 +53,7 @@ export const pages = [
     path: routes.iframeDebug,
     title: "iframe 嵌入调试",
     description:
-      "粘贴宿主嵌入代码；B 回传高度后同时更新 section + iframe（动态高度）",
+      "粘贴宿主嵌入代码；B 回传高度后更新 .iframe-section（iframe 为 height:100%）",
     category: "嵌入调试",
   },
 ] as const;
