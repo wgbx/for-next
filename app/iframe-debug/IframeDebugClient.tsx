@@ -63,6 +63,24 @@ type ParsedEmbed = {
   allowedOrigin: string | null;
 };
 
+const DEFAULT_IFRAME_ID =
+  "venue-map-c79a39f1-6da0-4cb8-847c-be6a8c16c614-dz-event";
+
+/** SSR-safe default — do not call DOMParser during prerender / useState init. */
+const DEFAULT_EMBED: ParsedEmbed = {
+  sectionHeight: "640px",
+  iframeId: DEFAULT_IFRAME_ID,
+  src: `${RELEASE_ORIGIN}/embed/dz/events/c79a39f1-6da0-4cb8-847c-be6a8c16c614?urlAlias=event&iframeId=${DEFAULT_IFRAME_ID}`,
+  title: "Ticket Booking",
+  sandbox:
+    "allow-same-origin allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox",
+  allow: "fullscreen; payment",
+  loading: "lazy",
+  iframeStyle:
+    "width: 100%; height: 100%; border: none; border-radius: 10px; padding: 0px",
+  allowedOrigin: RELEASE_ORIGIN,
+};
+
 type MessageLog = {
   id: string;
   at: string;
@@ -127,6 +145,10 @@ function applyHostHeight(iframe: HTMLElement, heightPx: string) {
 }
 
 function parseEmbedSnippet(snippet: string): ParsedEmbed | { error: string } {
+  if (typeof DOMParser === "undefined") {
+    return { error: "当前环境无法解析 HTML，请在浏览器中点击「应用并加载」。" };
+  }
+
   const parser = new DOMParser();
   const doc = parser.parseFromString(snippet, "text/html");
   const section = doc.querySelector(".iframe-section");
@@ -161,17 +183,22 @@ function parseEmbedSnippet(snippet: string): ParsedEmbed | { error: string } {
   };
 }
 
+function toLocalEmbed(embed: ParsedEmbed): ParsedEmbed {
+  return {
+    ...embed,
+    src: embed.src.replaceAll(RELEASE_ORIGIN, LOCAL_ORIGIN),
+    allowedOrigin:
+      embed.allowedOrigin === RELEASE_ORIGIN
+        ? LOCAL_ORIGIN
+        : embed.allowedOrigin?.replaceAll(RELEASE_ORIGIN, LOCAL_ORIGIN) ?? null,
+  };
+}
+
 export function IframeDebugClient() {
   const reactId = useId();
   const [snippet, setSnippet] = useState(DEFAULT_SNIPPET);
   const [parseError, setParseError] = useState<string | null>(null);
-  const [embed, setEmbed] = useState<ParsedEmbed>(() => {
-    const parsed = parseEmbedSnippet(DEFAULT_SNIPPET);
-    if ("error" in parsed) {
-      throw new Error(parsed.error);
-    }
-    return parsed;
-  });
+  const [embed, setEmbed] = useState<ParsedEmbed>(DEFAULT_EMBED);
   const [reloadKey, setReloadKey] = useState(0);
   const [liveHeight, setLiveHeight] = useState<string | null>(null);
   const [logs, setLogs] = useState<MessageLog[]>([]);
@@ -259,7 +286,11 @@ export function IframeDebugClient() {
   }
 
   function resetDefaults() {
-    loadParsed(DEFAULT_SNIPPET);
+    setSnippet(DEFAULT_SNIPPET);
+    setParseError(null);
+    setEmbed(DEFAULT_EMBED);
+    setLiveHeight(null);
+    setReloadKey((k) => k + 1);
   }
 
   function loadLocal() {
@@ -271,7 +302,11 @@ export function IframeDebugClient() {
       loadParsed(snippet);
       return;
     }
-    loadParsed(toLocalSnippet(DEFAULT_SNIPPET));
+    setSnippet(toLocalSnippet(DEFAULT_SNIPPET));
+    setParseError(null);
+    setEmbed(toLocalEmbed(DEFAULT_EMBED));
+    setLiveHeight(null);
+    setReloadKey((k) => k + 1);
   }
 
   const sectionStyle: CSSProperties = {
