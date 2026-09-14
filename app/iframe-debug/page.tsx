@@ -9,8 +9,9 @@ export default function IframeDebugPage() {
             iframe 嵌入调试
           </h1>
           <p className="text-zinc-600 dark:text-zinc-400">
-            复现 Pear Ticket Booking embed：预览 iframe，监听{" "}
-            <code className="text-sm">postMessage</code> 高度消息并自动调整。
+            粘贴交给宿主 A 的嵌入代码。B 通过{" "}
+            <code className="text-sm">postMessage</code> 回传高度后，A 应同时更新外层
+            section 与 iframe（640 仅作占位）。
           </p>
         </div>
 
