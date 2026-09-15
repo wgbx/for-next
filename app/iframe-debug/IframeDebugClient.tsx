@@ -16,9 +16,9 @@ const LOCAL_ORIGIN = "http://localhost:3000";
 const DEFAULT_SNIPPET = `<div class="iframe-section" style="height: 640px;">
   <iframe
     style="width: 100%; height: 100%; border: none; border-radius: 10px; padding: 0px"
-    id="venue-map-c79a39f1-6da0-4cb8-847c-be6a8c16c614-dz-event"
+    id="venue-map-1665ec5a-9a28-470c-891f-c4999b98c777-wgbx-venue-map"
     sandbox="allow-same-origin allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox"
-    src="${RELEASE_ORIGIN}/embed/dz/events/c79a39f1-6da0-4cb8-847c-be6a8c16c614?urlAlias=event&iframeId=venue-map-c79a39f1-6da0-4cb8-847c-be6a8c16c614-dz-event"
+    src="${RELEASE_ORIGIN}/embed/wgbx/events/1665ec5a-9a28-470c-891f-c4999b98c777?urlAlias=venue-map&iframeId=venue-map-1665ec5a-9a28-470c-891f-c4999b98c777-wgbx-venue-map"
     title="Ticket Booking"
     loading="lazy"
     allow="fullscreen; payment"
@@ -64,13 +64,13 @@ type ParsedEmbed = {
 };
 
 const DEFAULT_IFRAME_ID =
-  "venue-map-c79a39f1-6da0-4cb8-847c-be6a8c16c614-dz-event";
+  "venue-map-1665ec5a-9a28-470c-891f-c4999b98c777-wgbx-venue-map";
 
 /** SSR-safe default — do not call DOMParser during prerender / useState init. */
 const DEFAULT_EMBED: ParsedEmbed = {
   sectionHeight: "640px",
   iframeId: DEFAULT_IFRAME_ID,
-  src: `${RELEASE_ORIGIN}/embed/dz/events/c79a39f1-6da0-4cb8-847c-be6a8c16c614?urlAlias=event&iframeId=${DEFAULT_IFRAME_ID}`,
+  src: `${RELEASE_ORIGIN}/embed/wgbx/events/1665ec5a-9a28-470c-891f-c4999b98c777?urlAlias=venue-map&iframeId=${DEFAULT_IFRAME_ID}`,
   title: "Ticket Booking",
   sandbox:
     "allow-same-origin allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox",
